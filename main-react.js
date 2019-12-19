@@ -33,7 +33,7 @@ const ProdutoComponent = (props) => {
                     React.createElement('h5', { className: 'card-title' }, props.item.nome),
                     React.createElement('small', null, `R$${props.item.preco}`),
                     React.createElement('p', { className: 'card-text' }, props.item.descricao),
-                    React.createElement('button', { className: 'btn btn-primary btn-add', onClick: props.onAddCarrinho.bind(null,props.item) }, 'Adicionar')
+                    React.createElement('button', { className: 'btn btn-primary btn-add', onClick: props.onAddCarrinho.bind(null, props.item) }, 'Adicionar')
                 )
             )
         )
@@ -41,7 +41,7 @@ const ProdutoComponent = (props) => {
 }
 
 const ListaProdutoComponent = (props) => {
-    
+
     return (
         React.createElement('div', { className: 'row loja' },
             props.children
@@ -59,14 +59,14 @@ const carrinhoItensComponent = (props) => {
     return (
         React.createElement('div', { className: 'carrinho' },
             React.createElement('div', { className: 'carrinho_itens' },
-                Object.keys(props.itens1).map((produtosId,ind) => {
+                Object.keys(props.itens1).map((produtosId, ind) => {
                     return (
                         React.createElement('div', { className: 'card carrinho_item', key: `item-carrinho-${ind}` },
                             React.createElement('div', { className: 'card-body' },
                                 React.createElement('h5', { className: 'card-title' }, props.itens1[produtosId].nome),
                                 React.createElement('p', { className: 'card-text' }, `Preço unitario: R$${props.itens1[produtosId].preco} | Quantidade: ${props.itens1[produtosId].quantidade}`),
                                 React.createElement('p', { className: 'card-text' }, `Valor: R$${props.itens1[produtosId].preco * props.itens1[produtosId].quantidade}`),
-                                React.createElement('button', { className: 'btn btn-danger btn-sm' }, 'Remover')
+                                React.createElement('button', { onClick: props.onRemove.bind(null, produtosId), className: 'btn btn-danger btn-sm' }, 'Remover')
                             )
                         )
                     )
@@ -86,41 +86,55 @@ const totalCarrinhoComponent = (props) => {
 }
 
 const AppComponent = () => {
-   
-    const carrinhoItens = {
-        'bbc123': {
-            id: 'bbc123',
-            nome: 'JsRaiz para Node',
-            preco: 1200,
-            descricao: 'melhor curso',
-            img: './img/kimetsu-no-yaiba-infinite-train-hashira_eeye.png',
-            quantidade: 1
-        },
 
-        'cbc123': {
-            id: 'cbc123',
-            nome: 'Programção funcional',
-            preco: 500,
-            descricao: 'melhor curso',
-            img: './img/kimetsu-no-yaiba-infinite-train-hashira_eeye.png',
-            quantidade: 2
-        },
-    }
-
+    const [carrinhoItens, addItemCarrinho] = React.useState({});
 
     const addCarrinho = (produto) => {
         console.log(produto)
+        if (!carrinhoItens[produto.id]) {
+            addItemCarrinho({
+                ...carrinhoItens,
+                [produto.id]: {
+                    ...produto,
+                    quantidade: 1
+                }
+            })
+        } else {
+            addItemCarrinho({
+                ...carrinhoItens,
+                [produto.id]: {
+                    ...produto,
+                    quantidade: ++carrinhoItens[produto.id].quantidade
+                }
+            })
+        }
+    }
+
+    const removeCarrinho = (produtosId) => {
+        console.log('romevendo', produtosId)
+        if (carrinhoItens[produtosId].quantidade <= 1) {
+            delete carrinhoItens[produtosId]
+            addItemCarrinho({ ...carrinhoItens })
+        } else {
+            addItemCarrinho({
+                ...carrinhoItens,
+                [produtosId]: {
+                    ...carrinhoItens[produtosId],
+                    quantidade: --carrinhoItens[produtosId].quantidade
+                }
+            })
+        }
     }
 
     return (
         React.createElement(React.Fragment, null,
             React.createElement('div', { className: 'col-sm-8' },
                 React.createElement(ListaProdutoComponent, null,
-                  produtosListas.map((produto, ind) => React.createElement(ProdutoComponent, { item: produto, onAddCarrinho: addCarrinho, key: `item-carrinho-${ind}`}))
+                    produtosListas.map((produto, ind) => React.createElement(ProdutoComponent, { item: produto, onAddCarrinho: addCarrinho, key: `item-carrinho-${ind}` }))
                 )
             ),
             React.createElement('div', { className: 'col-sm-4' },
-                React.createElement(carrinhoItensComponent, { itens1: carrinhoItens }),
+                React.createElement(carrinhoItensComponent, { itens1: carrinhoItens, onRemove: removeCarrinho }),
                 React.createElement(totalCarrinhoComponent, { itens1: carrinhoItens })
             )
         )
