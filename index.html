@@ -10,8 +10,6 @@
     <title>React</title>
 </head>
 
-
-<img src=""  alt="">
 <body>
     <div class="container">
         <h1>Carrinho React</h1>
@@ -33,7 +31,174 @@
             </div>
             <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
             <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
-            <script src="./main-react.js"></script>
+            <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+            <script type="text/babel">
+                const produtosListas = [
+                    {
+                        id: 'bbc123',
+                        nome: 'JsRaiz para Node',
+                        preco: 1200,
+                        descricao: 'melhor curso',
+                        img: './img/kimetsu-no-yaiba-infinite-train-hashira_eeye.png'
+                    },
+
+                    {
+                        id: 'cbc123',
+                        nome: 'Programção funcional',
+                        preco: 500,
+                        descricao: 'melhor curso',
+                        img: './img/kimetsu-no-yaiba-infinite-train-hashira_eeye.png'
+                    },
+
+                    {
+                        id: 'dbc123',
+                        nome: 'JsRaiz para inesperientes',
+                        preco: 300,
+                        descricao: 'melhor curso',
+                        img: './img/kimetsu-no-yaiba-infinite-train-hashira_eeye.png'
+                    },
+                ]
+
+                const ProdutoComponent = (props) => {
+                    return (
+                        <div className = "col-sm-4 mb-3">
+                            <div className = "card loja_item">
+                                <img className = "card img-top" src={props.item.img} height = "180px"/>    
+                                <div className = "card-body">
+                                    <h5 className = "card-title">{props.item.nome}</h5>
+                                    <small>R${props.item.preco}</small>
+                                    <p className = "card-text">{props.item.descricao}</p>
+                                    <button className = "btn btn-primary" onClick = {props.onAddCarrinho.bind(null,props.item)}>Adicionar</button>    
+                                </div>
+                            </div>    
+                        </div>
+                    )
+                }
+
+                const ListaProdutoComponent = (props) => {
+                    return (
+                        <div className='row loja'>
+                            {props.children}
+                        </div>
+                    )
+                }
+
+                const valorTotal = (carrinhoItens) => {
+                    return Object.keys(carrinhoItens).reduce((acc, valorAtual) =>
+                        acc + (carrinhoItens[valorAtual].preco * carrinhoItens[valorAtual].quantidade)
+                        , 0)
+                }
+
+                const CarrinhoItensComponent = (props) => {
+                    return (
+                        <div className="carrinho">
+                            <div className="carrinho_itens">
+                                {Object.keys(props.itens1).map((produtosId, ind) =>
+                                    (
+                                        <div className="card carrinho_item" key={`item-carrinho-${ind}`}>
+                                            <div className="card-body">
+                                                <h5 className="card-title">
+                                                    {props.itens1[produtosId].nome}
+                                                </h5>
+                                                <p className="card-text"> Preco unitario: {props.itens1[produtosId].preco} | Quantidade: {props.itens1[produtosId].quantidade}
+                                                </p>
+                                                <p className="card-text">Valor: R${props.itens1[produtosId].preco * props.itens1[produtosId].quantidade}</p>
+                                                <button onClick={props.onRemove.bind(null, produtosId)} className="btn btn-danger btn-sm" >Remover</button>
+                                            </div>
+                                        </div>
+                                    ))}
+                            </div>
+                        </div>
+                    )
+                }
+
+                const TotalCarrinhoComponent = (props) => {
+                    return (
+                        <div className = "carrinho_total mt-3 p-2">
+                            <h6>Total: <strong>{valorTotal(props.itens1)}</strong></h6>    
+                        </div>
+                    )
+                }
+
+                const AppComponent = () => {
+
+                    const [carrinhoItens, addItemCarrinho] = React.useState({});
+
+                    const addCarrinho = (produto) => !carrinhoItens[produto.id] ? 
+                            addItemCarrinho({
+                            ...carrinhoItens,
+                                [produto.id]: {
+                                    ...produto,
+                                    quantidade: 1
+                                }
+                        }) : addItemCarrinho({
+                                ...carrinhoItens,
+                                [produto.id]: {
+                                    ...produto,
+                                    quantidade: ++carrinhoItens[produto.id].quantidade
+                                }
+                            })
+
+                    //     if (!carrinhoItens[produto.id]) {
+                    //         addItemCarrinho({
+                    //             ...carrinhoItens,
+                    //             [produto.id]: {
+                    //                 ...produto,
+                    //                 quantidade: 1
+                    //             }
+                    //         })
+                    //     } else {
+                    //         addItemCarrinho({
+                    //             ...carrinhoItens,
+                    //             [produto.id]: {
+                    //                 ...produto,
+                    //                 quantidade: ++carrinhoItens[produto.id].quantidade
+                    //             }
+                    //         })
+                    //     }
+                    // }
+
+                    const removeCarrinho = (produtosId) => {
+                        if (carrinhoItens[produtosId].quantidade <= 1) {
+                            delete carrinhoItens[produtosId]
+                            addItemCarrinho({ ...carrinhoItens })
+                        } else {
+                            addItemCarrinho({
+                                ...carrinhoItens,
+                                [produtosId]: {
+                                    ...carrinhoItens[produtosId],
+                                    quantidade: --carrinhoItens[produtosId].quantidade
+                                }
+                            })
+                        }
+                    }
+
+                    return (
+                        <React.Fragment>
+                            <div className="col-sm-8">
+                                <ListaProdutoComponent>
+                                    {produtosListas.map((produto, ind) =>
+                                        <ProdutoComponent
+                                            item={produto}
+                                            onAddCarrinho={addCarrinho}
+                                            key={`item-carrinho-${ind}`} />
+                                    )}
+                                </ListaProdutoComponent>
+                            </div>
+                            <div className="col-sm-4">
+                                <CarrinhoItensComponent itens1={carrinhoItens} onRemove={removeCarrinho} />
+                                <TotalCarrinhoComponent itens1={carrinhoItens} />
+                            </div>
+                        </React.Fragment>
+                    )
+                }
+
+                ReactDOM.render(
+                    React.createElement(AppComponent),
+                    document.getElementById('app')
+                )
+
+            </script>
 </body>
 
 </html>
